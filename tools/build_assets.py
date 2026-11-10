@@ -1,13 +1,12 @@
 """Generate the profile README assets (SVG, dark + light).
 
 - banner-{dark,light}.svg   : "IACOPO PRAI" drawn in contribution-graph squares, lighting up left to right
-- portrait-{dark,light}.svg : pixel portrait in the same palette, revealed bottom-up
 - toolbox-{dark,light}.svg  : tool chips styled like GitHub labels
 
-Run: python3 tools/build_assets.py  (needs Pillow; portrait source in tools/portrait-source.jpg)
+Run: python3 tools/build_assets.py  (needs Pillow)
 """
 from pathlib import Path
-from PIL import Image, ImageOps
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "assets"
@@ -110,57 +109,6 @@ def banner(theme):
     return n
 
 
-def portrait(theme, src):
-    t = THEMES[theme]
-    N = 52
-    rgb = Image.open(src).convert("RGB")
-    w, h = rgb.size
-    s = min(w, h)
-    c = int(s * 0.80)
-    left = (w - c) // 2
-    top = int(s * 0.03)
-    rgb = rgb.crop((left, top, left + c, top + c)).resize((N, N), Image.LANCZOS)
-    hp = rgb.convert("HSV").load()
-    # the wall is light and grey (low saturation): mask it out
-    mask = Image.new("L", (N, N), 0)
-    mp = mask.load()
-    for y in range(N):
-        for x in range(N):
-            _, sat, val = hp[x, y]
-            mp[x, y] = 0 if (sat < 38 and val > 150) else 255
-    # stretch contrast over the subject only, so the face gets all 4 shades
-    lp = ImageOps.equalize(rgb.convert("L"), mask=mask).load()
-    # natural mapping: dark theme = brighter green is lighter skin,
-    # light theme = darker green is darker hair/features
-    cuts = [0.12, 0.35, 0.6, 0.82] if theme == "dark" else [-1, 0.25, 0.5, 0.75]
-    cell, gap = 9, 2
-    size = N * (cell + gap) - gap
-    rects = []
-    for y in range(N):
-        for x in range(N):
-            if mp[x, y] == 0:
-                lvl = None
-            else:
-                b = lp[x, y] / 255
-                v = b if theme == "dark" else 1 - b
-                n = sum(v >= k for k in cuts)
-                lvl = None if n == 0 else n - 1
-            fill = t["empty"] if lvl is None else t["lv"][lvl]
-            delay = 0.2 + (N - y) * 0.05 + (x % 3) * 0.01
-            cls = ' class="p"' if lvl is not None else ""
-            st = f' style="animation-delay:{delay:.2f}s"' if lvl is not None else ""
-            rects.append(f'<rect{cls} x="{x * (cell + gap)}" y="{y * (cell + gap)}" width="{cell}" height="{cell}" rx="3" fill="{fill}"{st}/>')
-    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="{size}" height="{size}" viewBox="0 0 {size} {size}" role="img" aria-label="Pixel portrait of Iacopo Prai">
-<style>
-.p{{opacity:0;animation:in .5s ease forwards}}
-@keyframes in{{to{{opacity:1}}}}
-@media (prefers-reduced-motion: reduce){{.p{{animation:none;opacity:1}}}}
-</style>
-{"".join(rects)}
-</svg>'''
-    (OUT / f"portrait-{theme}.svg").write_text(svg)
-
-
 def toolbox(theme):
     t = THEMES[theme]
     tools = ["Claude Code", "Vite", "GSAP", "Lenis", "Git", "Python · learning"]
@@ -188,9 +136,7 @@ def toolbox(theme):
 
 
 if __name__ == "__main__":
-    src = ROOT / "tools" / "portrait-source.jpg"
     for th in THEMES:
         banner(th)
-        portrait(th, src)
         toolbox(th)
     print("ok")
