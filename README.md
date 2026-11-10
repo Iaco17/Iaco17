@@ -28,7 +28,7 @@ const iaco = {
 <div align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/toolbox-dark.svg">
-  <img src="assets/toolbox-light.svg" alt="Toolbox: Claude Code, Vite, GSAP, Lenis, Git, Python (learning)">
+  <img src="assets/toolbox-light.svg" alt="Toolbox: Claude Code, Vite, GSAP, Lenis, Git, Python">
 </picture>
 </div>
 
