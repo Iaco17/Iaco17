@@ -1,6 +1,6 @@
 """Generate the profile README assets (SVG, dark + light).
 
-- banner-{dark,light}.svg   : "IACOPO PRAI" drawn in contribution-graph squares, lighting up left to right
+- banner-{dark,light}.svg   : "IACOPO PRAI" drawn in contribution-graph squares, lighting up left to right, then a looping wave
 - toolbox-{dark,light}.svg  : tool chips styled like GitHub labels
 
 Run: python3 tools/build_assets.py  (needs Pillow)
@@ -69,9 +69,12 @@ def banner(theme):
             if lit:
                 lvl = shades[(x * 7 + y * 3) % len(shades)]
                 delay = 0.25 + cx * 0.045 + y * 0.02
+                # after the intro, a diagonal wave keeps breathing through the letters (on the wrapping <g>,
+                # so it multiplies with the pop-in opacity instead of overriding it)
+                wave = 2.8 + cx * 0.07 + y * 0.05
                 rects.append(
-                    f'<rect class="on" x="{px}" y="{py}" width="{cell}" height="{cell}" rx="4" '
-                    f'fill="{t["lv"][lvl]}" style="animation-delay:{delay:.2f}s"/>'
+                    f'<g class="w" style="animation-delay:{wave:.2f}s"><rect class="on" x="{px}" y="{py}" '
+                    f'width="{cell}" height="{cell}" rx="4" fill="{t["lv"][lvl]}" style="animation-delay:{delay:.2f}s"/></g>'
                 )
                 n += 1
             rects.append(
@@ -93,9 +96,11 @@ def banner(theme):
 .on{{opacity:0;animation:pop .45s cubic-bezier(.2,.8,.2,1.2) forwards}}
 @keyframes pop{{0%{{opacity:0;transform:scale(.4)}}100%{{opacity:1;transform:scale(1)}}}}
 .on{{transform-box:fill-box;transform-origin:center}}
+.w{{animation:wave 3.2s ease-in-out infinite}}
+@keyframes wave{{0%,100%{{opacity:1}}50%{{opacity:.35}}}}
 .tag{{opacity:0;animation:fade .8s ease forwards;animation-delay:2.4s}}
 @keyframes fade{{to{{opacity:1}}}}
-@media (prefers-reduced-motion: reduce){{.on,.tag{{animation:none;opacity:1}}}}
+@media (prefers-reduced-motion: reduce){{.on,.tag,.w{{animation:none;opacity:1}}}}
 </style>
 <rect width="100%" height="100%" rx="12" fill="{t["bg"]}"/>
 {"".join(empties)}
