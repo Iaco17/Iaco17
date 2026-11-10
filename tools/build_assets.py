@@ -116,7 +116,7 @@ def banner(theme):
 
 def toolbox(theme):
     t = THEMES[theme]
-    tools = ["Claude Code", "Vite", "GSAP", "Lenis", "Git", "Python · learning"]
+    tools = ["Claude Code", "Vite", "GSAP", "Lenis", "Git", "Python"]
     # approximate text width for a 15px system font
     from PIL import ImageFont
     f = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 15)
@@ -127,7 +127,7 @@ def toolbox(theme):
     x = 0
     parts = []
     for s, w in zip(tools, widths):
-        dot = t["lv"][3] if "learning" not in s else t["lv"][1]
+        dot = t["lv"][3]
         parts.append(
             f'<g transform="translate({x},0)"><rect x="0.5" y="0.5" width="{w - 1}" height="{h - 1}" rx="17" fill="{t["chip"]}" stroke="{t["border"]}"/>'
             f'<circle cx="16" cy="17" r="4.5" fill="{dot}"/>'
